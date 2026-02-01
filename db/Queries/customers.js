@@ -31,3 +31,24 @@ export async function createCustomer(
   ]);
   return newEmployee;
 }
+
+export async function getCustomers() {
+  const sql = `
+SELECT *
+FROM customers
+`;
+  const { rows: customers } = await db.query(sql);
+  return customers;
+}
+
+export async function getCustomerByUserId(user_id) {
+  const sql = `
+  SELECT *
+  FROM customers
+  WHERE user_id = $1
+  `;
+  const {
+    rows: [customer],
+  } = await db.query(sql, [user_id]);
+  return customer;
+}
