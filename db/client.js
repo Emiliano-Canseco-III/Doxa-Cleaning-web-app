@@ -1,4 +1,5 @@
-const { Client } = require("pg");
+require("dotenv").config();
+import { Client } from "pg";
 
 const connectionString =
   process.env.DATABASE_URL || "postgres://localhost:5432/doxa_cleaning_llc";
@@ -11,4 +12,4 @@ const client = new Client({
       : false,
 });
 
-module.exports = client;
+export default client;
