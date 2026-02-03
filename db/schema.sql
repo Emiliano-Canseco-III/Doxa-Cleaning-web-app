@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS customers CASCADE;
 DROP TABLE IF EXISTS jobs      CASCADE;
 
 
+-- First admin account is manually seeded into the database then ONLY the admin can create employee accounts.
 CREATE TABLE customers (
     id                serial PRIMARY KEY,
     name              VARCHAR(255) NOT NULL,
