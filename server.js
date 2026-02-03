@@ -8,8 +8,9 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
   try {
     // 1. Connects to the Postgres database
-    await pool.connect();
+    const result = await pool.query("SELECT NOW()");
     console.log("Connected to doxa_cleaning_llc database!");
+    console.log("Database Time:", result.rows[0].now);
 
     // 2. Starts the express server
     app.listen(PORT, () => {
