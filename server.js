@@ -14,7 +14,7 @@ const startServer = async () => {
 
     // 2. Starts the express server
     app.listen(PORT, () => {
-      console.log(`Server is running at http://localhost:${PORT}`);
+      console.log(`Server is running at http://localhost:${PORT}/`);
     });
   } catch (error) {
     console.error("Failed to start the server:", error);
