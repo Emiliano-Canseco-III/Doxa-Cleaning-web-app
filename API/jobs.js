@@ -56,4 +56,66 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+      jobs.*,
+      users.name AS employee_name,
+      customers.name AS customer_name,
+      customers.street_add1,
+      customers.city,
+      customers.state,
+      customers.phone as customer_phone
+    FROM jobs
+    JOIN users ON jobs.employee_id = users.id
+    JOIN customers ON jobs.customer_id = customers.id
+    ORDER BY jobs.scheduled_date DESC, jobs.scheduled_time DESC
+    `);
+
+    res.json({
+      message: "Jobs retrieved successfully",
+      jobs: result.rows,
+    });
+  } catch (err) {
+    console.error("Get jobs error:", err);
+    res.status(500).json({ error: "Server error retrieving jobs" });
+  }
+});
+
+// Get jobs for specific employee
+router.get("/my-jobs", async (req, res) => {
+  try {
+    const { employee_id } = req.query;
+
+    if (!employee_id) {
+      return res.status(400).json({ error: "Missing employee_id" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+      jobs.*,
+      customers.name AS customer_name,
+      customers.street_add1,
+      customers.city,
+      customers.state,
+      customers.phone as customer_phone
+    FROM jobs
+    JOIN customers ON jobs.customer_id = customers.id
+    WHERE jobs.employee_id = $1
+    ORDER BY jobs.scheduled_date ASC, jobs.scheduled_time ASC
+    `,
+      [employee_id],
+    );
+
+    res.json({
+      message: "Employee jobs retrieved successfully",
+      jobs: result.rows,
+    });
+  } catch (err) {
+    console.error("Get employee jobs error:", err);
+    res.status(500).json({ error: "Server error retrieving employee jobs" });
+  }
+});
 export default router;
