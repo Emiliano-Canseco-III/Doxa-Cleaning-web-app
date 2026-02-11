@@ -1,4 +1,4 @@
-import db from "#db/client";
+import db from "../db/pool.js";
 
 export async function createCustomer(
   name,
@@ -8,7 +8,7 @@ export async function createCustomer(
   state,
   city,
   zip_code,
-  phone
+  phone,
 ) {
   const sql = `
     INSERT INTO customers

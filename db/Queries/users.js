@@ -1,11 +1,11 @@
-import db from "#db/client";
+import db from "../db/pool.js";
 
 export async function createUser(
   customer_id,
   employee_id,
   email,
   password_hash,
-  role
+  role,
 ) {
   const sql = `
     INSERT INTO users
@@ -51,7 +51,7 @@ export async function getUserByEmail(email) {
   const sql = `
   SELECT *
   FROM users
-  WHERE email = $3
+  WHERE email = $1
   `;
   const {
     rows: [user],
