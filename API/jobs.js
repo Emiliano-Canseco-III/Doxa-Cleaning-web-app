@@ -118,4 +118,83 @@ router.get("/my-jobs", async (req, res) => {
     res.status(500).json({ error: "Server error retrieving employee jobs" });
   }
 });
+
+router.patch("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      employee_id,
+      customer_id,
+      status,
+      scheduled_date,
+      scheduled_time,
+      estimated_duration,
+    } = req.body;
+
+    // Build dynamic update query (Only update fields that are provided)
+    const updates = [];
+    const values = [];
+    let paramCount = 1;
+
+    if (employee_id !== undefined) {
+      updates.push(`employee_id = $${paramCount}`);
+      values.push(employee_id);
+      paramCount++;
+    }
+    if (customer_id !== undefined) {
+      updates.push(`customer_id = $${paramCount}`);
+      values.push(customer_id);
+      paramCount++;
+    }
+    if (status !== undefined) {
+      updates.push(`status = $${paramCount}`);
+      values.push(status);
+      paramCount++;
+    }
+    if (scheduled_date !== undefined) {
+      updates.push(`scheduled_date = $${paramCount}`);
+      values.push(scheduled_date);
+      paramCount++;
+    }
+    if (scheduled_time !== undefined) {
+      updates.push(`scheduled_time = $${paramCount}`);
+      values.push(scheduled_time);
+      paramCount++;
+    }
+    if (estimated_duration !== undefined) {
+      updates.push(`estimated_duration = $${paramCount}`);
+      values.push(estimated_duration);
+      paramCount++;
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    // Add job ID as last parameter
+    values.push(id);
+
+    const result = await pool.query(
+      `UPDATE jobs
+      SET ${updates.join(",")}
+      WHERE id = $${paramCount}
+      RETURNING *`,
+      values,
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json({
+      message: "Job updated successfully",
+      job: result.rows[0],
+    });
+  } catch (err) {
+    console.error("Update job error:", err);
+    res.status(500).json({ error: "Server error updating job" });
+  }
+});
 export default router;
