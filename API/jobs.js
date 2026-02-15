@@ -1,9 +1,14 @@
 import express from "express";
 import pool from "../db/pool.js";
+import {
+  authenticateToken,
+  requireAdmin,
+  requireOwnerOrAdmin,
+} from "../Middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Get data from request
     const {
@@ -57,7 +62,7 @@ router.post("/", async (req, res) => {
 });
 
 // Returns all jobs for all employees.
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, requireAdmin, async (req, res) => {
   // Joins users and customers tables with jobs table. Returns all jobs and customer info
   // pertaining to each assigned employee. Sorted in ascending order by schedule.
   try {
@@ -87,19 +92,23 @@ router.get("/", async (req, res) => {
 });
 
 // Get jobs for specific employee
-router.get("/my-jobs", async (req, res) => {
-  try {
-    const { employee_id } = req.query;
+router.get(
+  "/my-jobs",
+  authenticateToken,
+  requireOwnerOrAdmin,
+  async (req, res) => {
+    try {
+      const { employee_id } = req.query;
 
-    // If employee id is not entered return 422 error code and message.
-    if (!employee_id) {
-      return res.status(422).json({ error: "Missing employee_id" });
-    }
+      // If employee id is not entered return 422 error code and message.
+      if (!employee_id) {
+        return res.status(422).json({ error: "Missing employee_id" });
+      }
 
-    // Join jobs and customers table to get full job details and
-    // customer info for a specific employee, sorted by schedule.
-    const result = await pool.query(
-      `
+      // Join jobs and customers table to get full job details and
+      // customer info for a specific employee, sorted by schedule.
+      const result = await pool.query(
+        `
       SELECT
       jobs.*,
       customers.name AS customer_name,
@@ -112,24 +121,25 @@ router.get("/my-jobs", async (req, res) => {
     WHERE jobs.employee_id = $1
     ORDER BY jobs.scheduled_date ASC, jobs.scheduled_time ASC
     `,
-      [employee_id],
-    );
+        [employee_id],
+      );
 
-    // Once completed successfully return job details and customer info for a specific employee,
-    // and success message.
-    res.json({
-      message: "Employee jobs retrieved successfully",
-      jobs: result.rows,
-    });
+      // Once completed successfully return job details and customer info for a specific employee,
+      // and success message.
+      res.json({
+        message: "Employee jobs retrieved successfully",
+        jobs: result.rows,
+      });
 
-    // Catches any server errors and logs them, returning 500 error code and message.
-  } catch (err) {
-    console.error("Get employee jobs error:", err);
-    res.status(500).json({ error: "Server error retrieving employee jobs" });
-  }
-});
+      // Catches any server errors and logs them, returning 500 error code and message.
+    } catch (err) {
+      console.error("Get employee jobs error:", err);
+      res.status(500).json({ error: "Server error retrieving employee jobs" });
+    }
+  },
+);
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Will show the requested parameters to submit data  under.
     const { id } = req.params;
@@ -217,7 +227,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -247,7 +257,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.patch("/:id/complete", async (req, res) => {
+router.patch("/:id/complete", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
