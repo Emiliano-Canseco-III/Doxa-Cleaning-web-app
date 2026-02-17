@@ -13,7 +13,7 @@ app.use(express.json());
 // Api Routes with endpoints
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", jobsRouter);
-app.use("/api/customers.js", customersRouter);
+app.use("/api/customers", customersRouter);
 
 // Home page route
 app.get("/", (req, res) => {

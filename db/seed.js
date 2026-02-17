@@ -59,7 +59,7 @@ const seedDatabase = async () => {
       `INSERT INTO jobs (employee_id, customer_id, status, scheduled_date, scheduled_time, estimated_duration) VALUES
             ($1, $2, 'pending', '2026-02-20', '09:00:00', 90),
             ($1, $3, 'pending', '2026-02-21', '10:00:00', 120),
-            ($4, $5, 'in_progress', '2026-02-15', '14:00:00', 60),
+            ($4, $5, 'in-progress', '2026-02-15', '14:00:00', 60),
             ($4, $6, 'completed', '2026-02-10', '08:00:00', 90),
             ($1, $2, 'completed', '2026-02-08', '11:00:00', 90)
             RETURNING id, status, scheduled_date`,
