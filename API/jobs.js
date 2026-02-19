@@ -91,7 +91,7 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Find jobs for the User requesting their jobs
+// Find jobs for the User requesting to see their jobs
 router.get(
   "/my-jobs",
   authenticateToken,
@@ -191,7 +191,7 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
     }
 
     // If the amount of updates to the job info is 0, return 400 error code and error message.
-    // Will not complete PATCH operation until there is at least 1 updated field.
+    // Will not complete PATCH operation until there is at least 1 updated field
     if (updates.length === 0) {
       return res.status(422).json({ error: "No fields to update" });
     }
@@ -199,7 +199,7 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
     // Add job ID last
     values.push(id);
 
-    // Update job in database and return updated job data.
+    // Update job in database and return updated job data
     const result = await pool.query(
       `UPDATE jobs
       SET ${updates.join(",")}
@@ -208,20 +208,20 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
       values,
     );
 
-    // If selected job is not found return 404 error code with error message.
+    // If selected job is not found return 404 error code with error message
     if (result.rows.length === 0) {
       return res.status(404).json({
         error: "Job not found",
       });
     }
 
-    // Once job is updated successfully, return success message.
+    // Once job is updated successfully, return success message
     res.json({
       message: "Job updated successfully",
       job: result.rows[0],
     });
 
-    // If there is a server error, log the error and return 500 error code.
+    // If there is a server error, log the error and return 500 error code
   } catch (err) {
     console.error("Update job error:", err);
     res.status(500).json({ error: "Server error updating job" });
@@ -232,26 +232,26 @@ router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Delete the selected job from database and return deleted job data.
+    // Delete the selected job from database and return deleted job data
     const result = await pool.query(
       "DELETE FROM jobs WHERE id = $1 RETURNING *",
       [id],
     );
 
-    // If job is not found in database, return 404 error code.
+    // If job is not found in database, return 404 error code
     if (result.rows.length === 0) {
       return res.status(404).json({
         error: "Job not found",
       });
     }
 
-    // If job is deleted from database successfully, return success message and deleted job data.
+    // If job is deleted from database successfully, return success message and deleted job data
     res.json({
       message: "Job deleted successfully",
       deletedJob: result.rows[0],
     });
 
-    // If there was a server error during deletion, log error and return 500 error code.
+    // If there was a server error during deletion, log error and return 500 error code
   } catch (err) {
     console.error("Delete job error:", err);
     res.status(500).json({ error: "Server error deleting job" });
@@ -263,7 +263,7 @@ router.patch("/:id/complete", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Update job status to completed and set completed_at timestamp.
+    // Update job status to completed and set completed_at timestamp
     const result = await pool.query(
       `UPDATE jobs
       SET status = 'completed', completed_at = CURRENT_TIMESTAMP
@@ -285,7 +285,7 @@ router.patch("/:id/complete", authenticateToken, async (req, res) => {
       job: result.rows[0],
     });
 
-    // If there was a server error during update, log error and return 500 error code.
+    // If there was a server error during update, log error and return 500 error code
   } catch (err) {
     console.error("Complete job error:", err);
     res.status(500).json({ error: "Server error completing job" });

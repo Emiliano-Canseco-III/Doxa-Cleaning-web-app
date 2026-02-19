@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 export const authenticateToken = (req, res, next) => {
   // Get token from authorization header
   const authHeader = req.headers["authorization"];
-  // Format is "Bearer <token>"
+  // && Checks if header exists or if it's null. The .split will split the string using a space.
   const token = authHeader && authHeader.split(" ")[1];
 
-  // Checks if user has a token. If not, stops code and returns error
+  // Checks if user has a token and if it actually exists. If not, stops code and returns error
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
   }

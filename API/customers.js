@@ -45,11 +45,11 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
 
     res.json({
       message: "Customers retrieved successfully",
-      customer: result.rows,
+      customers: result.rows,
     });
   } catch (err) {
     console.error("Get customers error:", err);
-    res.status(500).json({ error: "Server error retrieving jobs" });
+    res.status(500).json({ error: "Server error retrieving customer" });
   }
 });
 
@@ -71,7 +71,7 @@ router.get("/:id", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Update any part of customers info
+// Update one or more parts of selected customer's info
 router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -83,7 +83,7 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
     const values = [];
     let paramCount = 1;
 
-    // Checks each field - if it exists it will add it to the arrays
+    // Checks if each field is empty
     if (name !== undefined) {
       updates.push(`name = $${paramCount}`);
       values.push(name);
@@ -126,7 +126,6 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
 
     values.push(id);
 
-    // This updates the customer with the inputted fields from the user
     const result = await pool.query(
       `UPDATE customers SET ${updates.join(",")} WHERE id = $${paramCount} RETURNING *`,
       values,
