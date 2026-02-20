@@ -1,41 +1,54 @@
-import express from "express";
-import cors from "cors";
-import authRouter from "./API/auth.js";
-import jobsRouter from "./API/jobs.js";
-import customersRouter from "./API/customers.js";
-import employeesRouter from "./API/employees.js";
+import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "./App.css";
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
 
-const app = express();
+function App() {
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  const handleLoginSuccess = (userData, tokenData) => {
+    setUser(userData);
+    setToken(tokenData);
+    setIsLoggedIn(true);
+    localStorage.setItem("token", tokenData);
+  };
 
-// Api Routes with endpoints
-app.use("/api/auth", authRouter);
-app.use("/api/jobs", jobsRouter);
-app.use("/api/customers", customersRouter);
-app.use("/api/employees", employeesRouter);
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+    setToken("");
+    localStorage.removeItem("token");
+  };
 
-// Home page route
-app.get("/", (req, res) => {
-  res.send({
-    message: "Welcome to Doxa Cleaning llc API!",
-    version: "1.0.0",
-    endpoints: {
-      health: "/api/health",
-      docs: "Coming Soon...",
-    },
-  });
-});
-
-// Route checks API is functioning
-app.get("/api/health", (req, res) => {
-  res.send({
-    message: "Doxa API is alive and well!",
-    uptime: process.uptime(),
-    timestamp: Date.now(),
-  });
-});
-
-export default app;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <LoginPage onLoginSuccess={handleLoginSuccess} />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            isLoggedIn ? (
+              <Dashboard user={user} token={token} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+export default App;
