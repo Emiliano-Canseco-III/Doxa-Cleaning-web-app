@@ -14,6 +14,8 @@ export const authenticateToken = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // Add user info to request
     req.user = decoded;
+    console.log("Decoded token:", decoded);
+    next();
 
     next();
   } catch (error) {
@@ -31,13 +33,11 @@ export const requireAdmin = (req, res, next) => {
 
 // Check user is accessing their own data.
 export const requireOwnerOrAdmin = (req, res, next) => {
-  const requestedUserId = parseInt(req.params.id, 10);
+  const requestedId = parseInt(req.params.id || req.query.employee_id, 10);
 
-  if (req.user.role === "admin" || req.user.id === requestedUserId) {
+  if (req.user.role === "admin" || req.user.userId === requestedId) {
     next();
   } else {
-    return res
-      .status(403)
-      .json({ error: "Access denied. You can only access your own data." });
+    return res.status(403).json({ error: "Access denied." });
   }
 };
