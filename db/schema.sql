@@ -33,6 +33,7 @@ CREATE TABLE jobs (
     status      VARCHAR(50) NOT NULL,
     scheduled_date DATE NOT NULL,
     scheduled_time TIME NOT NULL,
+    notes          TEXT,
     estimated_duration INTEGER DEFAULT 60, -- in minutes
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     started_at TIMESTAMP,

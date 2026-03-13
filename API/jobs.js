@@ -130,118 +130,6 @@ router.get(
   },
 );
 
-// Update any info of a selected job
-router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      employee_id,
-      customer_id,
-      status,
-      scheduled_date,
-      scheduled_time,
-      estimated_duration,
-    } = req.body;
-
-    // Build dynamic update query (Only update fields that are provided)
-    const updates = [];
-    const values = [];
-    let paramCount = 1;
-
-    // Check if fields are empty
-    if (employee_id !== undefined) {
-      updates.push(`employee_id = $${paramCount}`);
-      values.push(employee_id);
-      paramCount++;
-    }
-    if (customer_id !== undefined) {
-      updates.push(`customer_id = $${paramCount}`);
-      values.push(customer_id);
-      paramCount++;
-    }
-    if (status !== undefined) {
-      updates.push(`status = $${paramCount}`);
-      values.push(status);
-      paramCount++;
-    }
-    if (scheduled_date !== undefined) {
-      updates.push(`scheduled_date = $${paramCount}`);
-      values.push(scheduled_date);
-      paramCount++;
-    }
-    if (scheduled_time !== undefined) {
-      updates.push(`scheduled_time = $${paramCount}`);
-      values.push(scheduled_time);
-      paramCount++;
-    }
-    if (estimated_duration !== undefined) {
-      updates.push(`estimated_duration = $${paramCount}`);
-      values.push(estimated_duration);
-      paramCount++;
-    }
-
-    // Checks for at least 1 submitted field
-    if (updates.length === 0) {
-      return res.status(422).json({ error: "No fields to update" });
-    }
-
-    // Add job ID last
-    values.push(id);
-
-    const result = await pool.query(
-      `UPDATE jobs
-      SET ${updates.join(",")}
-      WHERE id = $${paramCount}
-      RETURNING *`,
-      values,
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        error: "Job not found",
-      });
-    }
-
-    res.json({
-      message: "Job updated successfully",
-      job: result.rows[0],
-    });
-  } catch (err) {
-    console.error("Update job error:", err);
-    res.status(500).json({ error: "Server error updating job" });
-  }
-});
-
-router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Delete the selected job from database and return deleted job data
-    const result = await pool.query(
-      "DELETE FROM jobs WHERE id = $1 RETURNING *",
-      [id],
-    );
-
-    // If job is not found in database, return 404 error code
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        error: "Job not found",
-      });
-    }
-
-    // If job is deleted from database successfully, return success message and deleted job data
-    res.json({
-      message: "Job deleted successfully",
-      deletedJob: result.rows[0],
-    });
-
-    // If there was a server error during deletion, log error and return 500 error code
-  } catch (err) {
-    console.error("Delete job error:", err);
-    res.status(500).json({ error: "Server error deleting job" });
-  }
-});
-
 // Updates job status to "In-progress"
 router.patch("/:id/in-progress", authenticateToken, async (req, res) => {
   try {
@@ -249,7 +137,7 @@ router.patch("/:id/in-progress", authenticateToken, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE jobs
-      SET status = 'In-progress', started_at = CURRENT_TIMESTAMP
+      SET status = 'in-progress', started_at = CURRENT_TIMESTAMP
       WHERE id = $1
       RETURNING *`,
       [id],
@@ -299,4 +187,123 @@ router.patch("/:id/complete", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Server error completing job" });
   }
 });
+
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Delete the selected job from database and return deleted job data
+    const result = await pool.query(
+      "DELETE FROM jobs WHERE id = $1 RETURNING *",
+      [id],
+    );
+
+    // If job is not found in database, return 404 error code
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    // If job is deleted from database successfully, return success message and deleted job data
+    res.json({
+      message: "Job deleted successfully",
+      deletedJob: result.rows[0],
+    });
+
+    // If there was a server error during deletion, log error and return 500 error code
+  } catch (err) {
+    console.error("Delete job error:", err);
+    res.status(500).json({ error: "Server error deleting job" });
+  }
+});
+
+// Update any info of a selected job
+router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      employee_id,
+      customer_id,
+      status,
+      scheduled_date,
+      scheduled_time,
+      estimated_duration,
+      notes,
+    } = req.body;
+
+    // Build dynamic update query (Only update fields that are provided)
+    const updates = [];
+    const values = [];
+    let paramCount = 1;
+
+    // Check if fields are empty
+    if (employee_id !== undefined) {
+      updates.push(`employee_id = $${paramCount}`);
+      values.push(employee_id);
+      paramCount++;
+    }
+    if (customer_id !== undefined) {
+      updates.push(`customer_id = $${paramCount}`);
+      values.push(customer_id);
+      paramCount++;
+    }
+    if (status !== undefined) {
+      updates.push(`status = $${paramCount}`);
+      values.push(status);
+      paramCount++;
+    }
+    if (scheduled_date !== undefined) {
+      updates.push(`scheduled_date = $${paramCount}`);
+      values.push(scheduled_date);
+      paramCount++;
+    }
+    if (scheduled_time !== undefined) {
+      updates.push(`scheduled_time = $${paramCount}`);
+      values.push(scheduled_time);
+      paramCount++;
+    }
+    if (notes !== undefined) {
+      updates.push(`notes = $${paramCount}`);
+      values.push(notes);
+      paramCount++;
+    }
+    if (estimated_duration !== undefined) {
+      updates.push(`estimated_duration = $${paramCount}`);
+      values.push(estimated_duration);
+      paramCount++;
+    }
+
+    // Checks for at least 1 submitted field
+    if (updates.length === 0) {
+      return res.status(422).json({ error: "No fields to update" });
+    }
+
+    // Add job ID last
+    values.push(id);
+
+    const result = await pool.query(
+      `UPDATE jobs
+      SET ${updates.join(",")}
+      WHERE id = $${paramCount}
+      RETURNING *`,
+      values,
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json({
+      message: "Job updated successfully",
+      job: result.rows[0],
+    });
+  } catch (err) {
+    console.error("Update job error:", err);
+    res.status(500).json({ error: "Server error updating job" });
+  }
+});
+
 export default router;
